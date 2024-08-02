@@ -6,6 +6,7 @@ const app = express();
 const port = 3000;
 
 app.use(express.json());  // parse body as jason.
+// app.use(bodyParser.json());
 app.use("/api", routes);
 
 app.route('/')

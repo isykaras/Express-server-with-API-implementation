@@ -34,11 +34,32 @@ createMyCustomApi.post('/addNewMember', (req, res) => {
 createMyCustomApi.put('/users/:id', (req, res) => {
   const userId = req.params.id;
   res.send(`Update user ${userId}`);
+})
+
+
+
+let data = require('./members_Array.json');
+const saveData = (data) => {
+  fs.writeFileSync('members_Array.json', JSON.stringify(data, null, 2));
+};
+
+createMyCustomApi.delete(`/removeMember/:id`, (req, res) => {
+    const memberID = req.params.memberID;
+    const initialLength = data.length;
+    data = data.filter(member => member.memberID !== memberID);
+
+    if(data.length < initialLength) {
+      saveData(data);
+      res.status(204).send();
+    }else {
+      res.status(404).send('Member not found')
+    }
+
 });
 
-createMyCustomApi.delete('/users/:id', (req, res) => {
-  const userId = req.params.id;
-  res.send(`Delete user ${userId}`);
-});
+
+// const userId = req.params.id;
+// res.send(`Delete user ${userId}`);
+
 
 module.exports = createMyCustomApi;
