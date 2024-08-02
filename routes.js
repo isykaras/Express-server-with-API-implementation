@@ -31,24 +31,48 @@ createMyCustomApi.post('/addNewMember', (req, res) => {
     res.sendStatus(200);
 });
 
-createMyCustomApi.put('/users/:id', (req, res) => {
-  const userId = req.params.id;
-  res.send(`Update user ${userId}`);
-})
+
+createMyCustomApi.put('/updateExistMember', (req, res) => {
+  const {memberId, role , firstname, lastname} = req.body
+  if(!memberId) {
+    return res.status(400).send('Member ID is required');
+  }
+  const memberIndex = data.findIndex(member => member.memberId === memberId);
+  if (memberId === -1) {
+    return res.status(404).send("Member not found");
+  }
+  const updatedMember = {
+    memberId,
+    role : role,
+    firstname : firstname ,
+    lastname : lastname
+  };
+
+  data[memberIndex] = updatedMember
+
+  
+  saveData(data)
+  res.status(201).send('Member updated successfully');
+});
 
 
 
-let data = require('./members_Array.json');
+let data = require('./members_Array.json'); // swsto datapath
+
+
 const saveData = (data) => {
-  fs.writeFileSync('members_Array.json', JSON.stringify(data, null, 2));
+  fs.writeFileSync('members_Array.json', JSON.stringify(data, null, 2)); // gia na grapsoume sto json arxeio
 };
 
-createMyCustomApi.delete(`/removeMember/:id`, (req, res) => {
-    const memberID = req.params.memberID;
-    const initialLength = data.length;
-    data = data.filter(member => member.memberID !== memberID);
+createMyCustomApi.delete(`/removeMember/:memberId`, (req, res) => {
+    const memberId = req.params.memberId;       
+    const initialLength = data.length; // store initial length of our data
 
-    if(data.length < initialLength) {
+
+    data = data.filter(member => member.memberId !== memberId); // filtrarisma , create new array , xwris to member pou diagrafoume
+
+
+    if(data.length < initialLength) {  // check ama mikrine to length diladi an diagraftike daga kai save
       saveData(data);
       res.status(204).send();
     }else {
@@ -57,9 +81,6 @@ createMyCustomApi.delete(`/removeMember/:id`, (req, res) => {
 
 });
 
-
-// const userId = req.params.id;
-// res.send(`Delete user ${userId}`);
 
 
 module.exports = createMyCustomApi;
