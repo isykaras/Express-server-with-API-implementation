@@ -5,8 +5,7 @@ const fs = require("fs");
 const app = express();
 const port = 3000;
 
-app.use(express.json());  // parse body as jason.
-// app.use(bodyParser.json());
+app.use(express.json());  // parse body as json.
 app.use("/api", routes);
 
 app.route('/')
