@@ -9,32 +9,42 @@ const saveData = (data) => {
 };
 
 
+// New function to load data
+const loadData = () => {
+  const rawData = fs.readFileSync('./members_Array.json');
+  return JSON.parse(rawData);
+};
+
+
+
 // Define routes
+
 membersAPI.get('/getAllMembers', (req, res) => {
-  fs.readFile("./members_Array.json", (err, data) => {
-    if (err) {
-      res.status(500).send(err.message)
-    }
-    res.status(200).send(data.toString());
-  });
+  try {
+    const data = loadData();
+    res.status(200).send(data);
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
 });
 
 
-
 membersAPI.post('/addNewMember', (req, res) => {
-  let data = fs.readFileSync("./members_Array.json"); // Reading the existing data
-  let myObject = JSON.parse(data); // Parsing the data to js obj
-  let newData = req.body; // required body from postman
-  const { memberId, role, firstname, lastname } = req.body;
-  if (!memberId || !role || !firstname || !lastname) {
-    return res.status(400).send('All fields (memberId, role, firstname, lastname) are required');
+  try {
+    let myObject = loadData();
+    let newData = req.body; // required body from postman
+
+    const { memberId, role, firstname, lastname } = newData;
+    if (!memberId || !role || !firstname || !lastname) {
+      return res.status(400).send('All fields (memberId, role, firstname, lastname) are required');
+    }
+
+    myObject.push(newData); // Pushing body into data
+    saveData(myObject); // Save the updated data
+    res.sendStatus(200);
+  } catch (err) {
+    res.status(500).send(err.message);
   }
-  myObject.push(newData); //pushing body into data
-  let newArray = JSON.stringify(myObject);
-  fs.writeFile("./members_Array.json", newArray, err => {
-    if (err) throw err;
-  });
-  res.sendStatus(200);
 });
 
 
@@ -64,10 +74,10 @@ membersAPI.put('/updateExistMember', (req, res) => {
 
 membersAPI.delete(`/removeMember/:memberId`, (req, res) => {
   const memberId = req.params.memberId;
+  let data = loadData();
   const initialLength = data.length; // store initial length of our data
 
   data = data.filter(member => member.memberId !== memberId); // filtrarisma , create new array without the deleted one.
-
 
   if (data.length === initialLength) {
     res.status(404).send('Member not found')
