@@ -1,21 +1,6 @@
 const express = require('express');
 const membersAPI = express.Router();
-const fs = require('fs');
-
-let data = require('./members_Array.json');
-
-const saveData = (data) => {
-  fs.writeFileSync('members_Array.json', JSON.stringify(data, null, 2));
-};
-
-
-// New function to load data
-const loadData = () => {
-  const rawData = fs.readFileSync('./members_Array.json');
-  return JSON.parse(rawData);
-};
-
-
+const { saveData, loadData } = require('./dataAccess');
 
 // Define routes
 
@@ -31,17 +16,23 @@ membersAPI.get('/getAllMembers', (req, res) => {
 
 membersAPI.post('/addNewMember', (req, res) => {
   try {
-    let myObject = loadData();
-    let newData = req.body; // required body from postman
+    const members = loadData();
+    const newMember = req.body;
 
-    const { memberId, role, firstname, lastname } = newData;
+    const { memberId, role, firstname, lastname } = newMember;
+
     if (!memberId || !role || !firstname || !lastname) {
       return res.status(400).send('All fields (memberId, role, firstname, lastname) are required');
     }
 
-    myObject.push(newData); // Pushing body into data
-    saveData(myObject); // Save the updated data
-    res.sendStatus(200);
+    const memberExists = members.some(member => member.memberId === memberId);
+    if (memberExists) {
+      return res.status(409).send(`The Member with the ID of "${memberId}" already exists, Give another ID`);
+    }
+
+    members.push(newMember);
+    saveData(members);
+    res.status(200).send(`New Member added succefully with the ID of "${memberId}"`);
   } catch (err) {
     res.status(500).send(err.message);
   }
@@ -49,6 +40,7 @@ membersAPI.post('/addNewMember', (req, res) => {
 
 
 membersAPI.put('/updateExistMember', (req, res) => {
+  const data = loadData();
   const { memberId, role, firstname, lastname } = req.body
   if (!memberId) {
     return res.status(400).send('Member ID is required');
@@ -64,10 +56,9 @@ membersAPI.put('/updateExistMember', (req, res) => {
     lastname: lastname
   };
 
-  data[memberIndex] = updatedMember
+  data[memberIndex] = updatedMember;
 
-
-  saveData(data)
+  saveData(data);
   res.status(201).send('Member updated successfully');
 });
 
@@ -77,7 +68,7 @@ membersAPI.delete(`/removeMember/:memberId`, (req, res) => {
   let data = loadData();
   const initialLength = data.length; // store initial length of our data
 
-  data = data.filter(member => member.memberId !== memberId); // filtrarisma , create new array without the deleted one.
+  data = data.filter(member => member.memberId !== memberId); // filter, create new array without the deleted one.
 
   if (data.length === initialLength) {
     res.status(404).send('Member not found')
@@ -85,7 +76,6 @@ membersAPI.delete(`/removeMember/:memberId`, (req, res) => {
   saveData(data);
   res.status(204).send();
 });
-
 
 
 module.exports = membersAPI;
