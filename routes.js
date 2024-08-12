@@ -66,9 +66,9 @@ membersAPI.put('/updateExistMember', (req, res) => {
 membersAPI.delete(`/removeMember/:memberId`, (req, res) => {
   const memberId = req.params.memberId;
   let data = loadData();
-  const initialLength = data.length; // store initial length of our data
+  const initialLength = data.length;
 
-  data = data.filter(member => member.memberId !== memberId); // filter, create new array without the deleted one.
+  data = data.filter(member => member.memberId !== memberId);
 
   if (data.length === initialLength) {
     res.status(404).send('Member not found')
