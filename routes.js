@@ -2,8 +2,6 @@ const express = require('express');
 const membersAPI = express.Router();
 const { saveData, loadData } = require('./dataAccess');
 
-// Define routes
-
 membersAPI.get('/getAllMembers', (req, res) => {
   try {
     const data = loadData();
